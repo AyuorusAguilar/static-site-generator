@@ -8,7 +8,7 @@ class TextType(Enum):
     italic = '_'
     code = '`'
     link = '[]'
-    image = 'img'
+    image = '![]'
 
 class TextNode:
     def __init__(self, text: str, type: TextType, url: str | None = None):
@@ -25,7 +25,7 @@ class TextNode:
         return f'TextNode({self.text}, {self.text_type.value}, {self.url})'
 
 
-def text_to_html_node(text_node: TextNode) -> LeafNode:
+def textnode_to_html_node(text_node: TextNode) -> LeafNode:
     match text_node.text_type:
         case TextType.plain_text:
             return LeafNode(None, text_node.text)
@@ -41,7 +41,6 @@ def text_to_html_node(text_node: TextNode) -> LeafNode:
             return LeafNode('img', '', {'src': text_node.url, 'alt': text_node.text})
         case x:
             raise ValueError('Invalid text_type')
-
 
 def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: TextType) -> list[TextNode]:
     new_nodes: list[TextNode] = []
@@ -61,13 +60,11 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
                 new_nodes.append(TextNode(splitted_string[i], text_type))
     return new_nodes
 
-
 def extract_markdown_images(text: str) -> list[tuple[str, str]]:
     return re.findall(r"!\[(.*?)\]\((.*?)\)" ,text)
 
-
 def extract_markdown_links(text: str) -> list[tuple[str, str]]:
-    return re.findall(r"\[(.*?)\]\((.*?)\)" ,text)
+    return re.findall(r"(?<!!)\[(.*?)\]\((.*?)\)" ,text)
 
 def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
     new_nodes: list[TextNode] = []
@@ -90,7 +87,6 @@ def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
     return new_nodes
 
 def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
-    print('DEBUG---NEW_INSTANCE')
     new_nodes: list[TextNode] = []
     for node in old_nodes:
         if node.text_type != TextType.plain_text:
@@ -99,16 +95,24 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
             splitted_nodes: list[TextNode]  = []
             links: list[tuple[str, str]] = extract_markdown_links(node.text)
             text: str = node.text
-            print(f"Links: {links}")
             for link in links:
                 split = text.split(f"[{link[0]}]({link[1]})", maxsplit=1)
                 if split[0] != '':
                     splitted_nodes.append(TextNode(split[0], TextType.plain_text))
                 splitted_nodes.append(TextNode(link[0], TextType.link, link[1]))
-                print(f"DEBUG---Text: {text}\nSplit:{split}")
                 text = split[1]
             if text != '':
                 splitted_nodes.append(TextNode(text, TextType.plain_text))
             new_nodes.extend(splitted_nodes)
     return new_nodes
 
+def text_to_textnodes(text: str) -> list[TextNode]:
+    nodes: list[TextNode] = [TextNode(text, TextType.plain_text)]
+    for type in TextType:
+        if type == TextType.link:
+            nodes = split_nodes_link(nodes)
+        elif type == TextType.image:
+            nodes = split_nodes_image(nodes)
+        else:
+            nodes = split_nodes_delimiter(nodes, type.value, type)
+    return nodes

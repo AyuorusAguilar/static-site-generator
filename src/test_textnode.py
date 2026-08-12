@@ -1,5 +1,5 @@
 import unittest
-from textnode import TextType, TextNode, text_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from textnode import TextType, TextNode, textnode_to_html_node, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -18,33 +18,33 @@ class TestTextNode(unittest.TestCase):
 class test_text_to_html_node(unittest.TestCase):
     def test_text(self):
         node = TextNode('example', TextType.plain_text)
-        HTMLNode = text_to_html_node(node)
+        HTMLNode = textnode_to_html_node(node)
         self.assertEqual(HTMLNode.tag, None)
         self.assertEqual(HTMLNode.value, 'example')
     def test_bold(self):
         node = TextNode('example', TextType.bold)
-        HTMLNode = text_to_html_node(node)
+        HTMLNode = textnode_to_html_node(node)
         self.assertEqual(HTMLNode.tag, 'b')
         self.assertEqual(HTMLNode.value, 'example')
     def test_italics(self):
         node = TextNode('example', TextType.italic)
-        HTMLNode = text_to_html_node(node)
+        HTMLNode = textnode_to_html_node(node)
         self.assertEqual(HTMLNode.tag, 'i')
         self.assertEqual(HTMLNode.value, 'example')
     def test_code(self):
         node = TextNode('example', TextType.code)
-        HTMLNode = text_to_html_node(node)
+        HTMLNode = textnode_to_html_node(node)
         self.assertEqual(HTMLNode.tag, 'code')
         self.assertEqual(HTMLNode.value, 'example')
     def test_link(self):
         node = TextNode('example', TextType.link, 'ismu.com')
-        HTMLNode = text_to_html_node(node)
+        HTMLNode = textnode_to_html_node(node)
         self.assertEqual(HTMLNode.tag, 'a')
         self.assertEqual(HTMLNode.value, 'example')
         self.assertEqual(HTMLNode.props, {'href' : 'ismu.com'})
     def test_image(self):
         node = TextNode('example', TextType.image, 'ismu.com/ismu.png')
-        HTMLNode = text_to_html_node(node)
+        HTMLNode = textnode_to_html_node(node)
         self.assertEqual(HTMLNode.tag, 'img')
         self.assertEqual(HTMLNode.value, '')
         self.assertEqual(HTMLNode.props, {'alt' : 'example', 'src' : 'ismu.com/ismu.png'})
@@ -274,5 +274,51 @@ class test_split_nodes_link(unittest.TestCase):
         self.assertEqual(split_nodes_link([node1]), expected_output)
 
 
+class test_text_to_textnodes(unittest.TestCase):
+    def test_one_by_one(self):
+        text = 'ismael **Manzanero**'
+        expected = [
+            TextNode('ismael ', TextType.plain_text),
+            TextNode('Manzanero', TextType.bold)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+        text = 'ismael _Manzanero_'
+        expected = [
+            TextNode('ismael ', TextType.plain_text),
+            TextNode('Manzanero', TextType.italic)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+        text = 'ismael `Manzanero`'
+        expected = [
+            TextNode('ismael ', TextType.plain_text),
+            TextNode('Manzanero', TextType.code)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+        text = '![ismael](manzanero.com)'
+        expected = [
+            TextNode('ismael', TextType.image, 'manzanero.com')
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+        text = '[ismael](manzanero.com)'
+        expected = [
+            TextNode('ismael', TextType.link, 'manzanero.com')
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_multiple_texttypes(self):
+        text = 'ismael **Manzanero** _come_ `Manzanas` [ismael](manzanero.com) ![ismael](manzanero.com)'
+        expected = [
+            TextNode('ismael ', TextType.plain_text),
+            TextNode('Manzanero', TextType.bold),
+            TextNode(' ', TextType.plain_text),
+            TextNode('come', TextType.italic),
+            TextNode(' ', TextType.plain_text),
+            TextNode('Manzanas', TextType.code),
+            TextNode(' ', TextType.plain_text),
+            TextNode('ismael', TextType.link, 'manzanero.com'),
+            TextNode(' ', TextType.plain_text),
+            TextNode('ismael', TextType.image, 'manzanero.com'),
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
 if __name__ == "__main__":
     unittest.main()
