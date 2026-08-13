@@ -45,7 +45,6 @@ def extract_title(markdown):
 	return re.findall(r"(?<!#)(#{1}\s)(?!#)(.*)(\n|$)", markdown)[0][1]
 
 def generate_page(from_path, template_path, dest_path, basepath):
-	print(basepath)
 	with open(from_path, 'r') as file:
 		markdown_source = file.read()
 	with open(template_path, 'r') as file:
