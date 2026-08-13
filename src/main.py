@@ -5,11 +5,13 @@ import sys
 
 from textnode import TextNode, TextType
 def main():
+    print(sys.argv)
     if len(sys.argv) >= 1:
+        print('hola')
         basepath = sys.argv[1]
     else:
         basepath ='/'
-
+    print(basepath)
     dir1 = os.path.abspath('static')
     dir2 = os.path.abspath('docs')
     template = os.path.abspath('template.html')
