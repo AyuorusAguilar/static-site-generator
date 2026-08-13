@@ -1,12 +1,17 @@
 import os
 from move_files_idk import recursive_copy
 from text_to_html import generate_pages_recursive
+import sys
 
 from textnode import TextNode, TextType
 def main():
+    if len(sys.argv) >= 1:
+        basepath = sys.argv[1]
+    else:
+        basepath ='/'
 
     dir1 = os.path.abspath('static')
-    dir2 = os.path.abspath('public')
+    dir2 = os.path.abspath('docs')
     template = os.path.abspath('template.html')
     content_dir = os.path.abspath('content')
     content_content = os.listdir(content_dir)
@@ -22,7 +27,7 @@ def main():
 
     recursive_copy(dir1, dir2)
     
-    generate_pages_recursive(content_dir, template, dir2)
+    generate_pages_recursive(content_dir, template, dir2, basepath)
 
 if __name__ == '__main__':
     main()

@@ -44,8 +44,7 @@ def markdown_to_html_node(markdown, debug = False) -> str:
 def extract_title(markdown):
 	return re.findall(r"(?<!#)(#{1}\s)(?!#)(.*)(\n|$)", markdown)[0][1]
 
-def generate_page(from_path, template_path, dest_path):
-	print(f"DEBUG: Working with: {from_path}")
+def generate_page(from_path, template_path, dest_path, basepath):
 	with open(from_path, 'r') as file:
 		markdown_source = file.read()
 	with open(template_path, 'r') as file:
@@ -54,19 +53,20 @@ def generate_page(from_path, template_path, dest_path):
 	title = extract_title(markdown_source)
 	template_source = template_source.replace('{{ Title }}', title)
 	template_source = template_source.replace('{{ Content }}', html_string)
+	template_source = template_source.replace('href:"/', f'href="{basepath}')
+	template_source = template_source.replace('src="/', f'src="{basepath}')
+	
 	with open(f"{dest_path[:-2]}html", 'w') as file:
 		file.write(template_source)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path,  debug = False, recursion_debug = 0):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
 	listdir_content = os.listdir(dir_path_content)
-	if debug: print(f"DEBUG: # Scaning dir {listdir_content}")
 	
 	for entry in listdir_content:
 		full_dir = f"{dir_path_content}/{entry}"
 		public_dir = f"{dest_dir_path}/{entry}"
 		if os.path.isdir(full_dir):
-			if debug: print(f"DEBUG: #{' #' * recursion_debug} {entry} is a directory. Calling recursively")
 			os.mkdir(public_dir)
-			generate_pages_recursive(full_dir, template_path,  public_dir, debug, recursion_debug + 1)
+			generate_pages_recursive(full_dir, template_path,  public_dir, basepath)
 		else:
-			generate_page(full_dir, template_path, public_dir)
+			generate_page(full_dir, template_path, public_dir, basepath)
