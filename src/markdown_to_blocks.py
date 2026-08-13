@@ -23,19 +23,21 @@ def block_type_detector(markdown_text: str) -> BlockType:
         return BlockType.heading
     if markdown_text[:3] == '```' and markdown_text[-3:] == '```':
         return BlockType.code
+    if len(markdown_text.split('\n')) < 2:
+        return BlockType.paragraph
     char_at_start_of_every_line: str | None = None
+    second_char_at_start_of_every_line: str | None = None
     for line in markdown_text.split('\n'):
         if char_at_start_of_every_line is None:
             char_at_start_of_every_line = line[0]
+            second_char_at_start_of_every_line = line[1]
             continue
-        if char_at_start_of_every_line != line[0]:
-            return BlockType.paragraph
     match char_at_start_of_every_line:
         case '>':
             return BlockType.quote
         case '-':
             return BlockType.unordered_list
-        case '.':
-            return BlockType.ordered_list
+    if second_char_at_start_of_every_line == '.':
+        return BlockType.ordered_list
     return BlockType.paragraph
     

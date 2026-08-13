@@ -9,7 +9,6 @@ class TextType(Enum):
     code = '`'
     link = '[]'
     image = '![]'
-    li = '-'
 
 
 class TextNode:
@@ -41,8 +40,6 @@ def textnode_to_html_node(text_node: TextNode) -> LeafNode:
             return LeafNode('a', text_node.text, {'href': text_node.url})
         case TextType.image:
             return LeafNode('img','', {'src': text_node.url, 'alt': text_node.text})
-        case TextType.li:
-            return LeafNode('li', text_node.text)
         case x:
             raise ValueError('Invalid text_type')
 
@@ -110,22 +107,6 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
             new_nodes.extend(splitted_nodes)
     return new_nodes
 
-def split_list_elements(old_nodes: list[TextNode]) -> list[TextNode]:
-    new_nodes: list[TextNode] = []
-    for node in old_nodes:
-        if node.text_type != TextType.plain_text:
-                    new_nodes.append(node)
-        else:
-            lines = node.text.split('\n')
-            for line in lines:
-                if len(line) < 2: continue
-                # print(f"DEBUG: processing: {line}, checking: {line[:1]}, comparition: {line[:2] == '- '}")
-                if line[:2] == '- ' or line[0] == '.':
-                    new_nodes.append(TextNode(line[2:], TextType.li))
-                else:
-                    new_nodes.append(TextNode(line, TextType.plain_text))
-    return new_nodes
-  
 def text_to_textnodes(text: str) -> list[TextNode]:
     nodes: list[TextNode] = [TextNode(text, TextType.plain_text)]
     for type in TextType:
@@ -133,8 +114,6 @@ def text_to_textnodes(text: str) -> list[TextNode]:
             nodes = split_nodes_link(nodes)
         elif type == TextType.image:
             nodes = split_nodes_image(nodes)
-        elif type == TextType.li:
-            nodes = split_list_elements(nodes)
         else:
             nodes = split_nodes_delimiter(nodes, type.value, type)
     return nodes

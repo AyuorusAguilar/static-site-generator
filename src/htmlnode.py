@@ -55,8 +55,14 @@ class ParentNode(HTMLNode):
         if self.children is None or self.children == [] :
             raise ValueError("children property can't be empty xP for ParentNodes")
         
+        """ if self.tag == 'ol' or self.tag == 'ul':
+            content = reduce(lambda x, y: str(x) + f"<li>{y.to_html()}</li>", self.children, '')
+            return f"<{self.tag}{self.props_to_html()}>{content}</{self.tag}>" """
+        
         content = reduce(lambda x, y: str(x) + str(y.to_html()), self.children, '')
 
         if self.tag == 'code':
             return f"<pre><{self.tag}{self.props_to_html()}>{content}</{self.tag}></pre>"
+    
+
         return f"<{self.tag}{self.props_to_html()}>{content}</{self.tag}>"

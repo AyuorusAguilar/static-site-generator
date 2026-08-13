@@ -1,6 +1,6 @@
 import os
 from move_files_idk import recursive_copy
-from text_to_html import generate_page
+from text_to_html import generate_pages_recursive
 
 from textnode import TextNode, TextType
 def main():
@@ -17,17 +17,12 @@ def main():
         raise Exception('No template found! Make sure there is a template.html document in the root of the app')
     if not os.path.exists(dir2):
         os.mkdir(dir2)
-    if not os.path.exists(dir2):
-        os.mkdir(dir2)
     if len(content_content) < 1:
          raise Exception('The content directory is empty! Write some nasty Markdown and mister engine would convert it for ya! :D')
 
     recursive_copy(dir1, dir2)
     
-    for content in content_content:
-        source_dir = f"{content_dir}/{content}"
-        dest_dir = f"{dir2}/{content}"
-        generate_page(source_dir, template, dest_dir)
+    generate_pages_recursive(content_dir, template, dir2)
 
 if __name__ == '__main__':
     main()
