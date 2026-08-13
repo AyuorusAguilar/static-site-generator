@@ -118,6 +118,7 @@ def split_list_elements(old_nodes: list[TextNode]) -> list[TextNode]:
         else:
             lines = node.text.split('\n')
             for line in lines:
+                if len(line) < 2: continue
                 # print(f"DEBUG: processing: {line}, checking: {line[:1]}, comparition: {line[:2] == '- '}")
                 if line[:2] == '- ' or line[0] == '.':
                     new_nodes.append(TextNode(line[2:], TextType.li))

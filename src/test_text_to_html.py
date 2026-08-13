@@ -1,4 +1,4 @@
-from text_to_html import markdown_to_html_node
+from text_to_html import markdown_to_html_node, extract_title
 import unittest
 
 class test_text_text_to_html(unittest.TestCase):
@@ -45,3 +45,25 @@ link épico: [hola](ismu.com)
 """
         expected = "<div><blockquote> Hola esta es una cita</blockquote></div>"
         self.assertEqual(markdown_to_html_node(text,True), expected)
+
+
+class test_extract_title(unittest.TestCase):
+    def test_only_header(self):
+        text = '# cabaladonga'
+        expected = 'cabaladonga'
+        self.assertEqual(extract_title(text), expected)
+
+    def test_header_and_line_jump(self):
+        text = '# cabaladonga\nhola'
+        expected = 'cabaladonga'
+        self.assertEqual(extract_title(text), expected)
+
+    def test_double_header(self):
+        text = '# # cabaladonga\nhola'
+        expected = 'cabaladonga'
+        self.assertEqual(extract_title(text), expected)
+
+    def test_more_headers(self):
+        text = '##### ## # cabaladonga\nhola'
+        expected = 'cabaladonga'
+        self.assertEqual(extract_title(text), expected)
